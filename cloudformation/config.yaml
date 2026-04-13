@@ -1,0 +1,54 @@
+# Configuration file for static website infrastructure deployment
+
+# Default settings
+defaults:
+  region: us-west-2
+  template_bucket_prefix: "cloudformation-templates"
+  stack_name_prefix: "static-website"
+
+# Environment configurations
+environments:
+  dev:
+    domain_name: "dev.zackspeakfitness.com"
+    create_hosted_zone: false
+    existing_hosted_zone_id: "Z08067872V6K5L44CCQLF"
+    github_organization: "joshblair"
+    github_repository: "zackspeakfitness.com"
+    
+  staging:
+    domain_name: "staging.zackspeakfitness.com"
+    create_hosted_zone: false
+    existing_hosted_zone_id: "Z08067872V6K5L44CCQLF"
+    github_organization: "joshblair"
+    github_repository: "zackspeakfitness.com"
+    
+  prod:
+    domain_name: "zackspeakfitness.com"
+    create_hosted_zone: false
+    existing_hosted_zone_id: "Z08067872V6K5L44CCQLF"
+    github_organization: "joshblair"
+    github_repository: "zackspeakfitness.com"
+
+# Template validation settings
+validation:
+  cfn_lint: true
+  cfn_nag: true
+  parameter_validation: true
+
+# Deployment settings
+deployment:
+  timeout_minutes: 60
+  rollback_on_failure: true
+  notification_topic: ""  # Optional SNS topic for notifications
+  
+# Monitoring and logging
+monitoring:
+  enable_cloudtrail: false
+  enable_config: false
+  cloudwatch_log_retention_days: 30
+
+# Cost optimization
+cost_optimization:
+  s3_lifecycle_enabled: true
+  cloudfront_price_class: "PriceClass_All"
+  s3_storage_class: "STANDARD"

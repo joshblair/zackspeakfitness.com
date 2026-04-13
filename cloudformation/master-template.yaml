@@ -1,0 +1,256 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Master CloudFormation Template for Static Website Infrastructure'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'Primary domain name for the website'
+    Default: 'zackspeakfitness.com'
+    AllowedPattern: '^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$'
+    ConstraintDescription: 'Must be a valid domain name'
+  
+  Environment:
+    Type: String
+    Description: 'Environment name'
+    Default: 'prod'
+    AllowedValues: [dev, staging, prod]
+  
+  GitHubOrganization:
+    Type: String
+    Description: 'GitHub organization or username'
+    Default: 'your-github-username'
+  
+  GitHubRepository:
+    Type: String
+    Description: 'GitHub repository name'
+    Default: 'zackspeakfitness-website'
+  
+  CreateHostedZone:
+    Type: String
+    Description: 'Whether to create a new Route 53 hosted zone'
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+  
+  ExistingHostedZoneId:
+    Type: String
+    Description: 'Existing hosted zone ID (required if CreateHostedZone is false)'
+    Default: ''
+  
+  TemplateS3Bucket:
+    Type: String
+    Description: 'S3 bucket containing nested CloudFormation templates'
+    Default: 'your-cloudformation-templates-bucket'
+  
+  TemplateS3KeyPrefix:
+    Type: String
+    Description: 'S3 key prefix for nested templates'
+    Default: 'templates/'
+
+  CertificateArn:
+    Type: String
+    Description: 'ARN of existing ACM certificate in us-east-1 (required for CloudFront)'
+    Default: 'arn:aws:acm:us-east-1:709085484102:certificate/651645d6-8ed7-4db5-adc8-de66fe67fcfc'
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: 'Website Configuration'
+        Parameters:
+          - DomainName
+          - Environment
+      - Label:
+          default: 'DNS Configuration'
+        Parameters:
+          - CreateHostedZone
+          - ExistingHostedZoneId
+      - Label:
+          default: 'GitHub Integration'
+        Parameters:
+          - GitHubOrganization
+          - GitHubRepository
+      - Label:
+          default: 'Template Configuration'
+        Parameters:
+          - TemplateS3Bucket
+          - TemplateS3KeyPrefix
+    ParameterLabels:
+      DomainName:
+        default: 'Domain Name'
+      Environment:
+        default: 'Environment'
+      CreateHostedZone:
+        default: 'Create Hosted Zone'
+      ExistingHostedZoneId:
+        default: 'Existing Hosted Zone ID'
+      GitHubOrganization:
+        default: 'GitHub Organization'
+      GitHubRepository:
+        default: 'GitHub Repository'
+
+Conditions:
+  CreateHostedZoneCondition: !Equals [!Ref CreateHostedZone, 'true']
+
+Resources:
+  # DNS Stack - Must be created first for certificate validation
+  DNSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${TemplateS3Bucket}.s3.amazonaws.com/${TemplateS3KeyPrefix}dns.yaml'
+      Parameters:
+        DomainName: !Ref DomainName
+        DistributionDomainName: 'placeholder.cloudfront.net'  # Will be updated after distribution creation
+        CreateHostedZone: !Ref CreateHostedZone
+        ExistingHostedZoneId: !Ref ExistingHostedZoneId
+        EnableHealthChecks: 'false'
+        HealthCheckPath: '/'
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-dns-stack'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Component
+          Value: 'DNS'
+
+  # Certificate is pre-deployed in us-east-1 (required for CloudFront)
+  # Deploy separately: aws cloudformation create-stack --stack-name zackspeakfitness-certificate --template-body file://templates/certificate.yaml --region us-east-1
+
+  # Storage Stack - S3 bucket and OAC
+  StorageStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://${TemplateS3Bucket}.s3.amazonaws.com/${TemplateS3KeyPrefix}storage.yaml'
+      Parameters:
+        DomainName: !Ref DomainName
+        Environment: !Ref Environment
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-storage-stack'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Component
+          Value: 'Storage'
+
+  # Distribution Stack - CloudFront distribution
+  DistributionStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: StorageStack
+    Properties:
+      TemplateURL: !Sub 'https://${TemplateS3Bucket}.s3.amazonaws.com/${TemplateS3KeyPrefix}distribution.yaml'
+      Parameters:
+        DomainName: !Ref DomainName
+        CertificateArn: !Ref CertificateArn
+        BucketDomainName: !GetAtt StorageStack.Outputs.BucketDomainName
+        OriginAccessControlId: !GetAtt StorageStack.Outputs.OriginAccessControlId
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-distribution-stack'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Component
+          Value: 'Distribution'
+
+  # CI/CD Stack - GitHub Actions IAM roles
+  CICDStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - StorageStack
+      - DistributionStack
+    Properties:
+      TemplateURL: !Sub 'https://${TemplateS3Bucket}.s3.amazonaws.com/${TemplateS3KeyPrefix}cicd.yaml'
+      Parameters:
+        GitHubOrganization: !Ref GitHubOrganization
+        GitHubRepository: !Ref GitHubRepository
+        BucketName: !GetAtt StorageStack.Outputs.BucketName
+        DistributionId: !GetAtt DistributionStack.Outputs.DistributionId
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-cicd-stack'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Component
+          Value: 'CICD'
+
+  # Monitoring Stack - CloudWatch metrics, alarms, and dashboards
+  MonitoringStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - StorageStack
+      - DistributionStack
+    Properties:
+      TemplateURL: !Sub 'https://${TemplateS3Bucket}.s3.amazonaws.com/${TemplateS3KeyPrefix}monitoring.yaml'
+      Parameters:
+        DomainName: !Ref DomainName
+        Environment: !Ref Environment
+        DistributionId: !GetAtt DistributionStack.Outputs.DistributionId
+        AccessLogsBucketName: !GetAtt StorageStack.Outputs.AccessLogsBucketName
+        AlertEmail: !Sub 'alerts@${DomainName}'
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-monitoring-stack'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Component
+          Value: 'Monitoring'
+
+Outputs:
+  WebsiteURL:
+    Description: 'Website URL'
+    Value: !Sub 'https://${DomainName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteURL'
+  
+  CloudFrontDistributionId:
+    Description: 'CloudFront Distribution ID'
+    Value: !GetAtt DistributionStack.Outputs.DistributionId
+    Export:
+      Name: !Sub '${AWS::StackName}-DistributionId'
+  
+  S3BucketName:
+    Description: 'S3 Bucket Name'
+    Value: !GetAtt StorageStack.Outputs.BucketName
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'
+  
+  CertificateArn:
+    Description: 'ACM Certificate ARN'
+    Value: !Ref CertificateArn
+    Export:
+      Name: !Sub '${AWS::StackName}-CertificateArn'
+  
+  HostedZoneId:
+    Description: 'Route 53 Hosted Zone ID'
+    Value: !GetAtt DNSStack.Outputs.HostedZoneId
+    Export:
+      Name: !Sub '${AWS::StackName}-HostedZoneId'
+  
+  NameServers:
+    Description: 'Route 53 Name Servers'
+    Value: !GetAtt DNSStack.Outputs.NameServers
+    Export:
+      Name: !Sub '${AWS::StackName}-NameServers'
+    Condition: CreateHostedZoneCondition
+  
+  GitHubActionsRoleArn:
+    Description: 'GitHub Actions IAM Role ARN'
+    Value: !GetAtt CICDStack.Outputs.GitHubActionsRoleArn
+    Export:
+      Name: !Sub '${AWS::StackName}-GitHubActionsRoleArn'
+  
+  AlertsTopicArn:
+    Description: 'SNS Topic ARN for monitoring alerts'
+    Value: !GetAtt MonitoringStack.Outputs.AlertsTopicArn
+    Export:
+      Name: !Sub '${AWS::StackName}-AlertsTopicArn'
+  
+  DashboardURL:
+    Description: 'CloudWatch Dashboard URL'
+    Value: !GetAtt MonitoringStack.Outputs.DashboardURL
+    Export:
+      Name: !Sub '${AWS::StackName}-DashboardURL'
+  
+  CostTrackingDashboardURL:
+    Description: 'Cost Tracking Dashboard URL'
+    Value: !GetAtt MonitoringStack.Outputs.CostTrackingDashboardURL
+    Export:
+      Name: !Sub '${AWS::StackName}-CostTrackingDashboardURL'

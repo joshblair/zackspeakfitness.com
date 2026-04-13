@@ -1,0 +1,298 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Route 53 DNS Configuration for Static Website with Health Checks and Monitoring'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'Primary domain name'
+    Default: 'zackspeakfitness.com'
+    AllowedPattern: '^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$'
+    ConstraintDescription: 'Must be a valid domain name'
+  
+  DistributionDomainName:
+    Type: String
+    Description: 'CloudFront distribution domain name'
+    AllowedPattern: '^[a-zA-Z0-9][a-zA-Z0-9.-]{1,253}[a-zA-Z0-9]$'
+    ConstraintDescription: 'Must be a valid CloudFront distribution domain name'
+  
+  CreateHostedZone:
+    Type: String
+    Description: 'Whether to create a new hosted zone'
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+  
+  ExistingHostedZoneId:
+    Type: String
+    Description: 'Existing hosted zone ID (if CreateHostedZone is false)'
+    Default: ''
+    AllowedPattern: '^(Z[A-Z0-9]{1,32})?$'
+    ConstraintDescription: 'Must be a valid Route 53 hosted zone ID or empty'
+  
+  EnableHealthChecks:
+    Type: String
+    Description: 'Whether to enable health checks for the domain'
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+  
+  HealthCheckPath:
+    Type: String
+    Description: 'Path for health check requests'
+    Default: '/'
+    AllowedPattern: '^/.*$'
+    ConstraintDescription: 'Must start with /'
+
+Conditions:
+  ShouldCreateHostedZone: !Equals [!Ref CreateHostedZone, 'true']
+  UseExistingHostedZone: !Equals [!Ref CreateHostedZone, 'false']
+  ShouldCreateHealthChecks: !Equals [!Ref EnableHealthChecks, 'true']
+
+Resources:
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Condition: ShouldCreateHostedZone
+    Properties:
+      Name: !Ref DomainName
+      HostedZoneConfig:
+        Comment: !Sub 'Hosted zone for ${DomainName} static website'
+        PrivateZone: false
+      HostedZoneTags:
+        - Key: Name
+          Value: !Sub '${DomainName}-hosted-zone'
+        - Key: Environment
+          Value: !Ref 'AWS::StackName'
+        - Key: Project
+          Value: 'static-website'
+        - Key: Owner
+          Value: 'zackspeakfitness'
+        - Key: CostCenter
+          Value: 'website-operations'
+        - Key: Component
+          Value: 'dns'
+        - Key: ManagedBy
+          Value: 'CloudFormation'
+        - Key: Purpose
+          Value: 'Domain Name Resolution'
+        - Key: Monitoring
+          Value: 'Health Checks Enabled'
+
+  # Health check for the apex domain
+  ApexHealthCheck:
+    Type: AWS::Route53::HealthCheck
+    Condition: ShouldCreateHealthChecks
+    Properties:
+      Type: HTTPS
+      ResourcePath: !Ref HealthCheckPath
+      FullyQualifiedDomainName: !Ref DomainName
+      Port: 443
+      RequestInterval: 30
+      FailureThreshold: 3
+      MeasureLatency: true
+      EnableSNI: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-apex-health-check'
+        - Key: Domain
+          Value: !Ref DomainName
+        - Key: Type
+          Value: 'Apex Domain Health Check'
+        - Key: Environment
+          Value: !Ref 'AWS::StackName'
+        - Key: Project
+          Value: 'static-website'
+        - Key: Owner
+          Value: 'zackspeakfitness'
+        - Key: CostCenter
+          Value: 'website-operations'
+        - Key: Component
+          Value: 'dns'
+        - Key: ManagedBy
+          Value: 'CloudFormation'
+
+  # Health check for the www subdomain
+  WWWHealthCheck:
+    Type: AWS::Route53::HealthCheck
+    Condition: ShouldCreateHealthChecks
+    Properties:
+      Type: HTTPS
+      ResourcePath: !Ref HealthCheckPath
+      FullyQualifiedDomainName: !Sub 'www.${DomainName}'
+      Port: 443
+      RequestInterval: 30
+      FailureThreshold: 3
+      MeasureLatency: true
+      EnableSNI: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-www-health-check'
+        - Key: Domain
+          Value: !Sub 'www.${DomainName}'
+        - Key: Type
+          Value: 'WWW Subdomain Health Check'
+        - Key: Environment
+          Value: !Ref 'AWS::StackName'
+        - Key: Project
+          Value: 'static-website'
+        - Key: Owner
+          Value: 'zackspeakfitness'
+        - Key: CostCenter
+          Value: 'website-operations'
+        - Key: Component
+          Value: 'dns'
+        - Key: ManagedBy
+          Value: 'CloudFormation'
+
+  ApexRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !If 
+        - ShouldCreateHostedZone
+        - !Ref HostedZone
+        - !Ref ExistingHostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Ref DistributionDomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID (global)
+        EvaluateTargetHealth: false
+
+  WWWRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !If 
+        - ShouldCreateHostedZone
+        - !Ref HostedZone
+        - !Ref ExistingHostedZoneId
+      Name: !Sub 'www.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Ref DistributionDomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID (global)
+        EvaluateTargetHealth: false
+
+  # CloudWatch alarm for apex domain health check
+  ApexHealthCheckAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: ShouldCreateHealthChecks
+    Properties:
+      AlarmName: !Sub '${DomainName}-apex-health-check-alarm'
+      AlarmDescription: !Sub 'Health check alarm for ${DomainName}'
+      MetricName: HealthCheckStatus
+      Namespace: AWS/Route53
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+        - Name: HealthCheckId
+          Value: !Ref ApexHealthCheck
+      TreatMissingData: breaching
+      AlarmActions:
+        - !Ref HealthCheckSNSTopic
+
+  # CloudWatch alarm for www subdomain health check
+  WWWHealthCheckAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: ShouldCreateHealthChecks
+    Properties:
+      AlarmName: !Sub '${DomainName}-www-health-check-alarm'
+      AlarmDescription: !Sub 'Health check alarm for www.${DomainName}'
+      MetricName: HealthCheckStatus
+      Namespace: AWS/Route53
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+        - Name: HealthCheckId
+          Value: !Ref WWWHealthCheck
+      TreatMissingData: breaching
+      AlarmActions:
+        - !Ref HealthCheckSNSTopic
+
+  # SNS topic for health check notifications
+  HealthCheckSNSTopic:
+    Type: AWS::SNS::Topic
+    Condition: ShouldCreateHealthChecks
+    Properties:
+      TopicName: !Sub '${DomainName}-health-check-notifications'
+      DisplayName: !Sub '${DomainName} Health Check Notifications'
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-health-check-topic'
+        - Key: Purpose
+          Value: 'DNS Health Check Notifications'
+        - Key: Environment
+          Value: !Ref 'AWS::StackName'
+        - Key: Project
+          Value: 'static-website'
+        - Key: Owner
+          Value: 'zackspeakfitness'
+        - Key: CostCenter
+          Value: 'website-operations'
+        - Key: Component
+          Value: 'dns'
+        - Key: ManagedBy
+          Value: 'CloudFormation'
+
+Outputs:
+  HostedZoneId:
+    Description: 'Route 53 Hosted Zone ID'
+    Value: !If 
+      - ShouldCreateHostedZone
+      - !Ref HostedZone
+      - !Ref ExistingHostedZoneId
+    Export:
+      Name: !Sub '${AWS::StackName}-HostedZoneId'
+  
+  NameServers:
+    Description: 'Name servers for the hosted zone'
+    Value: !If 
+      - ShouldCreateHostedZone
+      - !Join [', ', !GetAtt HostedZone.NameServers]
+      - 'Using existing hosted zone'
+    Export:
+      Name: !Sub '${AWS::StackName}-NameServers'
+  
+  ApexHealthCheckId:
+    Description: 'Health check ID for apex domain'
+    Value: !If
+      - ShouldCreateHealthChecks
+      - !Ref ApexHealthCheck
+      - 'Health checks disabled'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApexHealthCheckId'
+    Condition: ShouldCreateHealthChecks
+  
+  WWWHealthCheckId:
+    Description: 'Health check ID for www subdomain'
+    Value: !If
+      - ShouldCreateHealthChecks
+      - !Ref WWWHealthCheck
+      - 'Health checks disabled'
+    Export:
+      Name: !Sub '${AWS::StackName}-WWWHealthCheckId'
+    Condition: ShouldCreateHealthChecks
+  
+  HealthCheckSNSTopicArn:
+    Description: 'SNS topic ARN for health check notifications'
+    Value: !If
+      - ShouldCreateHealthChecks
+      - !Ref HealthCheckSNSTopic
+      - 'Health checks disabled'
+    Export:
+      Name: !Sub '${AWS::StackName}-HealthCheckSNSTopicArn'
+    Condition: ShouldCreateHealthChecks
+  
+  ApexRecordName:
+    Description: 'Apex domain record name'
+    Value: !Ref DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-ApexRecordName'
+  
+  WWWRecordName:
+    Description: 'WWW subdomain record name'
+    Value: !Sub 'www.${DomainName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-WWWRecordName'

@@ -1,28 +1,84 @@
-# Angular specific
-/dist/
-/out-tsc/
-/tmp/
-/coverage/
-/e2e/test-output/
-/.angular/
-.angular/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Node modules and dependency files
-/node_modules/
-/package-lock.json
-/yarn.lock
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+cloudformation/.venv/
 
-# Environment files
-/.env
+# AWS
+.aws/
+*.pem
+*.key
 
-# Angular CLI and build artefacts
-/.angular-cli.json
-/.ng/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# TypeScript cache
-*.tsbuildinfo
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# CloudFormation
+cloudformation/outputs/
+cloudformation/.aws-sam/
+
+# Website build artifacts
+website/dist/
+website/build/
+website/node_modules/
+
+# Environment specific files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Backup files
+*.bak
+*.backup
+
+# Hypothesis test cache
+.hypothesis/

@@ -1,0 +1,512 @@
+/* Responsive Design - Mobile First Approach */
+
+/* Large Desktop */
+@media screen and (min-width: 1400px) {
+    .container {
+        max-width: 1400px;
+    }
+    
+    .hero h1 {
+        font-size: 3.5rem;
+    }
+    
+    .page-header h1 {
+        font-size: 3.5rem;
+    }
+}
+
+/* Desktop */
+@media screen and (max-width: 1200px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .hero {
+        padding: 3rem 0;
+    }
+    
+    .hero h1 {
+        font-size: 2.8rem;
+    }
+}
+
+/* Tablet Landscape */
+@media screen and (max-width: 1024px) {
+    .nav-container {
+        padding: 1rem 15px;
+    }
+    
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem 0;
+    }
+    
+    .hero-content {
+        padding-right: 0;
+        margin-bottom: 2rem;
+    }
+    
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .about-intro {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .features {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    
+    .services-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
+
+/* Tablet Portrait */
+@media screen and (max-width: 768px) {
+    /* Navigation - Mobile Menu */
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 70px;
+        flex-direction: column;
+        background-color: white;
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+        padding: 2rem 0;
+        gap: 0;
+    }
+
+    .nav-menu.active {
+        left: 0;
+    }
+
+    .nav-item {
+        margin: 1rem 0;
+    }
+
+    .hamburger {
+        display: flex;
+    }
+
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+    
+    /* Typography */
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.8rem;
+    }
+    
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .page-header {
+        padding: 5rem 0 3rem;
+    }
+    
+    /* Sections */
+    section {
+        padding: 3rem 0;
+    }
+    
+    /* Hero Buttons */
+    .hero-buttons {
+        justify-content: center;
+    }
+    
+    /* Features */
+    .features {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    /* Services */
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Certifications */
+    .cert-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    
+    /* Timeline */
+    .timeline-item {
+        flex-direction: column;
+    }
+    
+    .timeline-date {
+        flex: none;
+        margin-bottom: 0.5rem;
+    }
+    
+    .timeline-content {
+        padding-left: 1rem;
+        border-left: none;
+        border-top: 2px solid #e74c3c;
+        padding-top: 1rem;
+    }
+    
+    .timeline-content::before {
+        display: none;
+    }
+    
+    /* Philosophy */
+    .philosophy-content {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Stats */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+    }
+    
+    /* Testimonials */
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* FAQ */
+    .faq-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Video */
+    .video-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Footer */
+    .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+}
+
+/* Mobile Landscape */
+@media screen and (max-width: 640px) {
+    .container {
+        padding: 0 10px;
+    }
+    
+    .nav-container {
+        padding: 1rem 10px;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .service-card {
+        padding: 1.5rem;
+    }
+    
+    .contact-form {
+        padding: 1.5rem;
+    }
+    
+    .testimonial-card {
+        padding: 1.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+/* Mobile Portrait */
+@media screen and (max-width: 480px) {
+    /* Typography */
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 1.6rem;
+    }
+    
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2.2rem;
+    }
+    
+    /* Navigation */
+    .nav-logo h1 {
+        font-size: 1.3rem;
+    }
+    
+    /* Sections */
+    section {
+        padding: 2rem 0;
+    }
+    
+    .page-header {
+        padding: 4rem 0 2rem;
+    }
+    
+    /* Cards and Components */
+    .feature {
+        padding: 1.5rem;
+    }
+    
+    .service-card {
+        padding: 1rem;
+    }
+    
+    .contact-form {
+        padding: 1rem;
+    }
+    
+    .testimonial-card {
+        padding: 1rem;
+    }
+    
+    .faq-item {
+        padding: 1rem;
+    }
+    
+    .philosophy-item {
+        padding: 1rem;
+    }
+    
+    /* Form Elements */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px;
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    /* Stats */
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+    }
+    
+    /* Quote marks in testimonials */
+    .quote-mark {
+        font-size: 3rem;
+        top: 5px;
+        left: 10px;
+    }
+    
+    /* CTA sections */
+    .cta {
+        padding: 3rem 1rem;
+    }
+    
+    .success-stats {
+        padding: 3rem 1rem;
+    }
+}
+
+/* Extra Small Mobile */
+@media screen and (max-width: 360px) {
+    .container {
+        padding: 0 5px;
+    }
+    
+    .nav-container {
+        padding: 1rem 5px;
+    }
+    
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .service-price {
+        font-size: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Landscape Orientation Adjustments */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .hero {
+        min-height: 60vh;
+        padding: 2rem 0;
+    }
+    
+    .page-header {
+        padding: 3rem 0 2rem;
+    }
+    
+    section {
+        padding: 2rem 0;
+    }
+}
+
+/* Print Styles */
+@media print {
+    * {
+        background: transparent !important;
+        color: black !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    .navbar,
+    .hamburger,
+    .btn,
+    .cta,
+    footer {
+        display: none !important;
+    }
+    
+    main {
+        margin-top: 0 !important;
+    }
+    
+    .page-header {
+        background: none !important;
+        color: black !important;
+        padding: 1rem 0 !important;
+    }
+    
+    .page-header h1 {
+        color: black !important;
+    }
+    
+    a {
+        text-decoration: underline;
+    }
+    
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+}
+
+/* High DPI Displays */
+@media screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 192dpi) {
+    /* Optimize for high DPI displays */
+    .hero-image img,
+    .about-image img,
+    .cert-item img {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    /* This is a placeholder for future dark mode implementation */
+    /* Currently maintaining light theme for brand consistency */
+}
+
+/* Hover Support Detection */
+@media (hover: hover) {
+    .feature:hover,
+    .service-card:hover,
+    .testimonial-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+}
+
+/* No Hover Support (Touch Devices) */
+@media (hover: none) {
+    .feature:hover,
+    .service-card:hover,
+    .testimonial-card:hover,
+    .btn-primary:hover {
+        transform: none;
+    }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .feature,
+    .service-card,
+    .testimonial-card,
+    .btn {
+        transition: none;
+    }
+    
+    .nav-menu {
+        transition: none;
+    }
+    
+    .hamburger .bar {
+        transition: none;
+    }
+}
+
+/* Container Queries Support (Future Enhancement) */
+@supports (container-type: inline-size) {
+    .services-grid {
+        container-type: inline-size;
+    }
+    
+    @container (max-width: 600px) {
+        .service-card {
+            padding: 1rem;
+        }
+    }
+}

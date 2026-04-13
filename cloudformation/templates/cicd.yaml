@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'IAM Roles and Policies for GitHub Actions CI/CD'
+
+Parameters:
+  GitHubOrganization:
+    Type: String
+    Description: 'GitHub organization or username'
+    Default: 'your-github-username'
+  
+  GitHubRepository:
+    Type: String
+    Description: 'GitHub repository name'
+    Default: 'zackspeakfitness-website'
+  
+  BucketName:
+    Type: String
+    Description: 'S3 bucket name for deployment'
+  
+  DistributionId:
+    Type: String
+    Description: 'CloudFront distribution ID'
+
+Resources:
+  GitHubOIDCProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+        - 1c58a3a8518e8759bf075b76b750d4f2df264fcd
+      Tags:
+        - Key: Name
+          Value: 'GitHub-OIDC-Provider'
+        - Key: Environment
+          Value: !Ref 'AWS::StackName'
+        - Key: Project
+          Value: 'static-website'
+        - Key: Owner
+          Value: 'zackspeakfitness'
+        - Key: CostCenter
+          Value: 'website-operations'
+        - Key: Component
+          Value: 'cicd'
+        - Key: ManagedBy
+          Value: 'CloudFormation'
+        - Key: Purpose
+          Value: 'GitHub Actions OIDC Authentication'
+        - Key: Security
+          Value: 'OIDC Authentication'
+
+  GitHubActionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'GitHubActions-${AWS::StackName}'
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: !Ref GitHubOIDCProvider
+            Condition:
+              StringEquals:
+                'token.actions.githubusercontent.com:aud': sts.amazonaws.com
+              StringLike:
+                'token.actions.githubusercontent.com:sub': !Sub 'repo:${GitHubOrganization}/${GitHubRepository}:*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/PowerUserAccess
+      Policies:
+        - PolicyName: S3DeploymentPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub 'arn:aws:s3:::${BucketName}'
+                  - !Sub 'arn:aws:s3:::${BucketName}/*'
+        - PolicyName: CloudFrontInvalidationPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudfront:CreateInvalidation
+                  - cloudfront:GetInvalidation
+                  - cloudfront:ListInvalidations
+                Resource: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${DistributionId}'
+      Tags:
+        - Key: Name
+          Value: 'GitHub-Actions-Role'
+        - Key: Environment
+          Value: !Ref 'AWS::StackName'
+        - Key: Project
+          Value: 'static-website'
+        - Key: Owner
+          Value: 'zackspeakfitness'
+        - Key: CostCenter
+          Value: 'website-operations'
+        - Key: Component
+          Value: 'cicd'
+        - Key: ManagedBy
+          Value: 'CloudFormation'
+        - Key: Purpose
+          Value: 'Automated Deployment'
+        - Key: Security
+          Value: 'Least Privilege Access'
+
+Outputs:
+  GitHubActionsRoleArn:
+    Description: 'ARN of the GitHub Actions IAM Role'
+    Value: !GetAtt GitHubActionsRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-GitHubActionsRoleArn'
+  
+  OIDCProviderArn:
+    Description: 'ARN of the GitHub OIDC Provider'
+    Value: !Ref GitHubOIDCProvider
+    Export:
+      Name: !Sub '${AWS::StackName}-OIDCProviderArn'

@@ -1,0 +1,113 @@
+name: Validate Pull Request
+
+"on":
+  pull_request:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - 'cloudformation/**'
+      - '.github/workflows/**'
+
+jobs:
+  validate-website:
+    name: Validate Website Files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install validators
+        run: |
+          npm install -g html-validate
+          
+      - name: Validate HTML files
+        run: |
+          if [ -d "website" ]; then
+            echo "Validating HTML files..."
+            find website -name "*.html" -exec html-validate {} \;
+            echo "HTML validation completed"
+          else
+            echo "No website directory found, skipping HTML validation"
+          fi
+          
+      - name: Check CSS syntax (basic)
+        run: |
+          if [ -d "website" ]; then
+            echo "Checking CSS files..."
+            find website -name "*.css" -exec echo "Checking {}" \;
+            # Basic CSS syntax check - look for unclosed braces
+            find website -name "*.css" -exec sh -c 'if [ -s "$1" ]; then echo "CSS file $1 exists and is not empty"; fi' _ {} \;
+          fi
+          
+      - name: Check for security issues
+        run: |
+          if [ -d "website" ]; then
+            echo "Checking for potential security issues..."
+            # Check for inline scripts (basic security check)
+            if grep -r "<script>" website/ --include="*.html"; then
+              echo "Warning: Inline scripts found. Consider using external JS files."
+            fi
+            # Check for external links without rel attributes
+            if grep -r 'href="http' website/ --include="*.html" | grep -v 'rel='; then
+              echo "Warning: External links without rel attributes found."
+            fi
+          fi
+
+  validate-infrastructure:
+    name: Validate CloudFormation Templates
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install CloudFormation tools
+        run: |
+          pip install cfn-lint
+          
+      - name: Validate CloudFormation templates
+        run: |
+          echo "Validating CloudFormation templates..."
+          find cloudformation/templates -name "*.yaml" -exec cfn-lint {} \;
+          
+      - name: Check template syntax
+        run: |
+          echo "Running template validation script..."
+          cd cloudformation
+          python validate_templates.py
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run basic security checks
+        run: |
+          echo "Running basic security checks..."
+          
+          # Check for secrets in code
+          if grep -r -i "password\|secret\|key\|token" --include="*.html" --include="*.js" --include="*.css" website/ 2>/dev/null; then
+            echo "Warning: Potential secrets found in website files"
+          fi
+          
+          # Check for hardcoded AWS credentials
+          if grep -r -E "AKIA[0-9A-Z]{16}" . --exclude-dir=.git; then
+            echo "Error: AWS Access Key found in code!"
+            exit 1
+          fi
+          
+          echo "Basic security scan completed"

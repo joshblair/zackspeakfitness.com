@@ -1,0 +1,194 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'S3 Bucket for Static Website with OAC Security'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'Domain name for bucket naming'
+    Default: 'zackspeakfitness.com'
+  
+  Environment:
+    Type: String
+    Description: 'Environment name'
+    Default: 'prod'
+    AllowedValues: [dev, staging, prod]
+
+Resources:
+  # Access logs bucket for CloudFront
+  AccessLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'zackspeakfitness-access-logs-${Environment}-${AWS::AccountId}'
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: true
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldLogs
+            Status: Enabled
+            ExpirationInDays: 90
+          - Id: TransitionToIA
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 30
+                StorageClass: STANDARD_IA
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-access-logs-bucket'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Purpose
+          Value: 'CloudFront Access Logs'
+        - Key: Project
+          Value: 'static-website'
+        - Key: Owner
+          Value: 'zackspeakfitness'
+        - Key: CostCenter
+          Value: 'website-operations'
+        - Key: Component
+          Value: 'storage'
+        - Key: ManagedBy
+          Value: 'CloudFormation'
+        - Key: Security
+          Value: 'Private'
+        - Key: Backup
+          Value: 'Lifecycle Policy'
+
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'zackspeakfitness-website-${Environment}-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteIncompleteMultipartUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+          - Id: TransitionOldVersions
+            Status: Enabled
+            NoncurrentVersionTransitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 30
+              - StorageClass: GLACIER
+                TransitionInDays: 90
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 365
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-website-bucket'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Purpose
+          Value: 'Static Website Hosting'
+        - Key: Security
+          Value: 'OAC-Protected'
+        - Key: Project
+          Value: 'static-website'
+        - Key: Owner
+          Value: 'zackspeakfitness'
+        - Key: CostCenter
+          Value: 'website-operations'
+        - Key: Component
+          Value: 'storage'
+        - Key: ManagedBy
+          Value: 'CloudFormation'
+        - Key: Backup
+          Value: 'Versioning Enabled'
+
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: 'zackspeakfitness-oac'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AllowCloudFrontServicePrincipal
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub 'arn:aws:s3:::${WebsiteBucket}/*'
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/*'
+          - Sid: DenyInsecureConnections
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource: 
+              - !Sub 'arn:aws:s3:::${WebsiteBucket}/*'
+              - !Sub 'arn:aws:s3:::${WebsiteBucket}'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
+          - Sid: DenyDirectPublicAccess
+            Effect: Deny
+            Principal: '*'
+            Action: 
+              - 's3:GetObject'
+              - 's3:GetObjectVersion'
+            Resource: !Sub 'arn:aws:s3:::${WebsiteBucket}/*'
+            Condition:
+              StringNotEquals:
+                'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/*'
+
+Outputs:
+  BucketName:
+    Description: 'Name of the S3 bucket'
+    Value: !Ref WebsiteBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'
+  
+  BucketDomainName:
+    Description: 'Domain name of the S3 bucket'
+    Value: !GetAtt WebsiteBucket.RegionalDomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketDomainName'
+  
+  OriginAccessControlId:
+    Description: 'Origin Access Control ID'
+    Value: !Ref OriginAccessControl
+    Export:
+      Name: !Sub '${AWS::StackName}-OriginAccessControlId'
+  
+  AccessLogsBucketName:
+    Description: 'Name of the access logs S3 bucket'
+    Value: !Ref AccessLogsBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-AccessLogsBucketName'
+  
+  AccessLogsBucketDomainName:
+    Description: 'Domain name of the access logs S3 bucket'
+    Value: !GetAtt AccessLogsBucket.RegionalDomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-AccessLogsBucketDomainName'

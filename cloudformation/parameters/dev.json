@@ -1,0 +1,26 @@
+[
+  {
+    "ParameterKey": "DomainName",
+    "ParameterValue": "dev.zackspeakfitness.com"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "GitHubOrganization",
+    "ParameterValue": "joshblair"
+  },
+  {
+    "ParameterKey": "GitHubRepository",
+    "ParameterValue": "zackspeakfitness.com"
+  },
+  {
+    "ParameterKey": "CreateHostedZone",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "ExistingHostedZoneId",
+    "ParameterValue": "Z08067872V6K5L44CCQLF"
+  }
+]

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contact Zack Speak Fitness - Schedule Your Personal Training Consultation Today">
+    <meta name="keywords" content="contact personal trainer, schedule consultation, fitness coaching, training appointment">
+    <title>Contact - Zack Speak Fitness</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <h1>Zack Speak Fitness</h1>
+                </div>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="about.html" class="nav-link">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="services.html" class="nav-link">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="contact.html" class="nav-link active">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="testimonials.html" class="nav-link">Testimonials</a>
+                    </li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Get Started Today</h1>
+                <p>Ready to transform your fitness? Schedule your consultation and take the first step towards your goals.</p>
+            </div>
+        </section>
+
+        <section class="contact-content">
+            <div class="container">
+                <div class="contact-grid">
+                    <div class="contact-info">
+                        <h2>Let's Connect</h2>
+                        <p>I'm excited to help you achieve your fitness goals. Whether you're interested in local training or remote coaching, let's discuss how we can work together to create a program that fits your lifestyle and delivers results.</p>
+                        
+                        <div class="contact-methods">
+                            <div class="contact-method">
+                                <h3>Schedule a Consultation</h3>
+                                <p>Book a free 15-minute consultation to discuss your goals and learn about my training approach.</p>
+                                <div class="calendly-container">
+                                    <!-- Calendly inline widget begin -->
+                                    <div class="calendly-inline-widget" 
+                                         data-url="https://calendly.com/zackspeakfitness/consultation" 
+                                         style="min-width:320px;height:630px;">
+                                    </div>
+                                    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+                                    <!-- Calendly inline widget end -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-details">
+                            <h3>Other Ways to Reach Me</h3>
+                            <div class="contact-item">
+                                <strong>Email:</strong>
+                                <a href="mailto:zack@zackspeakfitness.com">zack@zackspeakfitness.com</a>
+                            </div>
+                            <div class="contact-item">
+                                <strong>Phone:</strong>
+                                <a href="tel:+1234567890">(123) 456-7890</a>
+                            </div>
+                            <div class="contact-item">
+                                <strong>Response Time:</strong>
+                                <span>Within 24 hours</span>
+                            </div>
+                        </div>
+
+                        <div class="service-areas">
+                            <h3>Service Areas</h3>
+                            <div class="areas">
+                                <div class="area">
+                                    <h4>Local Training</h4>
+                                    <p>Serving the greater metropolitan area and surrounding communities. Home visits available within 15 miles.</p>
+                                </div>
+                                <div class="area">
+                                    <h4>Remote Coaching</h4>
+                                    <p>Virtual training and coaching services available worldwide. All you need is an internet connection!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-form-section">
+                        <h2>Send a Message</h2>
+                        <p>Have questions or want to learn more? Send me a message and I'll get back to you within 24 hours.</p>
+                        
+                        <form class="contact-form" id="contactForm">
+                            <div class="form-group">
+                                <label for="name">Full Name *</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="service">Interested Service</label>
+                                <select id="service" name="service">
+                                    <option value="">Select a service</option>
+                                    <option value="local-personal">Local Personal Training</option>
+                                    <option value="local-group">Local Group Training</option>
+                                    <option value="virtual-training">Virtual Personal Training</option>
+                                    <option value="online-coaching">Online Coaching Program</option>
+                                    <option value="custom-program">Custom Program Design</option>
+                                    <option value="consultation">Free Consultation</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="goals">Fitness Goals</label>
+                                <textarea id="goals" name="goals" rows="3" placeholder="Tell me about your fitness goals and what you'd like to achieve..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="experience">Fitness Experience</label>
+                                <select id="experience" name="experience">
+                                    <option value="">Select your experience level</option>
+                                    <option value="beginner">Beginner (New to fitness)</option>
+                                    <option value="intermediate">Intermediate (Some experience)</option>
+                                    <option value="advanced">Advanced (Experienced)</option>
+                                    <option value="athlete">Athlete/Competitive</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="message">Additional Information</label>
+                                <textarea id="message" name="message" rows="4" placeholder="Any additional information, questions, or specific requirements..."></textarea>
+                            </div>
+                            
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="newsletter" name="newsletter">
+                                    <span class="checkmark"></span>
+                                    I'd like to receive fitness tips and updates via email
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="faq">
+            <div class="container">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h3>What should I expect in my first session?</h3>
+                        <p>Your first session will include a comprehensive fitness assessment, goal discussion, and a sample workout to get you started. We'll also review your program and answer any questions.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Do I need any equipment for remote training?</h3>
+                        <p>I can design programs for any equipment level, from bodyweight-only to full gym setups. We'll discuss your available equipment during our consultation.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>How often should I train?</h3>
+                        <p>Training frequency depends on your goals, schedule, and fitness level. Most clients see great results with 2-3 sessions per week, but we'll create a plan that works for you.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>What is your cancellation policy?</h3>
+                        <p>I require 24-hour notice for session cancellations. This allows me to offer the time slot to other clients and maintain a fair scheduling system.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Do you provide nutrition guidance?</h3>
+                        <p>Yes! I provide general nutrition guidance and meal planning support as part of my training services. For detailed meal plans, I can refer you to registered dietitians.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>How do I get started?</h3>
+                        <p>Simply schedule a free consultation using the calendar above, or send me a message. We'll discuss your goals and determine the best training approach for you.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta">
+            <div class="container">
+                <h2>Ready to Transform Your Fitness?</h2>
+                <p>Don't wait to start your journey. Schedule your consultation today and take the first step towards achieving your goals.</p>
+                <a href="#" class="btn btn-primary" onclick="scrollToCalendly()">Schedule Now</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Zack Speak Fitness</h3>
+                    <p>Professional personal training services for local and remote clients.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="testimonials.html">Testimonials</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Info</h3>
+                    <p>Ready to get started? Schedule your consultation today.</p>
+                    <a href="contact.html" class="btn btn-small">Get In Touch</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Zack Speak Fitness. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/analytics.js"></script>
+</body>
+</html>

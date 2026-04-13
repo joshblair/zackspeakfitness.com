@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ACM Certificate for Static Website with DNS Validation'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'Primary domain name for the certificate'
+    Default: 'zackspeakfitness.com'
+  
+  HostedZoneId:
+    Type: String
+    Description: 'Route 53 Hosted Zone ID for DNS validation'
+  
+  Environment:
+    Type: String
+    Description: 'Environment name'
+    Default: 'prod'
+    AllowedValues: [dev, staging, prod]
+
+Resources:
+  SSLCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub 'www.${DomainName}'
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !Ref HostedZoneId
+        - DomainName: !Sub 'www.${DomainName}'
+          HostedZoneId: !Ref HostedZoneId
+      Tags:
+        - Key: Name
+          Value: !Sub '${DomainName}-certificate'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: 'static-website'
+        - Key: Owner
+          Value: 'zackspeakfitness'
+        - Key: CostCenter
+          Value: 'website-operations'
+        - Key: Component
+          Value: 'certificate'
+        - Key: ManagedBy
+          Value: 'CloudFormation'
+        - Key: CreatedDate
+          Value: !Sub '${AWS::StackName}-creation'
+        - Key: Purpose
+          Value: 'SSL/TLS Encryption'
+        - Key: Security
+          Value: 'TLS 1.2+'
+
+Outputs:
+  CertificateArn:
+    Description: 'ARN of the ACM Certificate'
+    Value: !Ref SSLCertificate
+    Export:
+      Name: !Sub '${AWS::StackName}-CertificateArn'
+  
+  CertificateDomainName:
+    Description: 'Primary domain name of the certificate'
+    Value: !Ref DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-CertificateDomainName'
