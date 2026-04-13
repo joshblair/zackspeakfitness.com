@@ -71,7 +71,7 @@ jobs:
     strategy:
       matrix:
         environment: 
-          - ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'dev' }}
+          - ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'prod' }}
     
     environment: ${{ matrix.environment }}
     
@@ -89,18 +89,18 @@ jobs:
       - name: Get stack outputs
         id: stack-outputs
         run: |
-          STACK_NAME="static-website-${{ matrix.environment }}"
+          STACK_NAME="zackspeakfitness-${{ matrix.environment }}"
           
           # Get S3 bucket name
           BUCKET_NAME=$(aws cloudformation describe-stacks \
             --stack-name "$STACK_NAME" \
-            --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' \
+            --query 'Stacks[0].Outputs[?OutputKey==`S3BucketName`].OutputValue' \
             --output text)
           
           # Get CloudFront distribution ID
           DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
             --stack-name "$STACK_NAME" \
-            --query 'Stacks[0].Outputs[?OutputKey==`DistributionId`].OutputValue' \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionId`].OutputValue' \
             --output text)
           
           echo "bucket-name=$BUCKET_NAME" >> $GITHUB_OUTPUT
@@ -184,8 +184,8 @@ jobs:
           
           # Get CloudFront domain name for verification
           DOMAIN_NAME=$(aws cloudformation describe-stacks \
-            --stack-name "static-website-${{ matrix.environment }}" \
-            --query 'Stacks[0].Outputs[?OutputKey==`DomainName`].OutputValue' \
+            --stack-name "zackspeakfitness-${{ matrix.environment }}" \
+            --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURL`].OutputValue' \
             --output text)
           
           echo "Website should be available at: https://$DOMAIN_NAME"
