@@ -99,7 +99,7 @@ Resources:
       TemplateURL: !Sub 'https://${TemplateS3Bucket}.s3.amazonaws.com/${TemplateS3KeyPrefix}dns.yaml'
       Parameters:
         DomainName: !Ref DomainName
-        DistributionDomainName: 'placeholder.cloudfront.net'  # Will be updated after distribution creation
+        DistributionDomainName: 'placeholder.cloudfront.net'  # Updated manually after first deploy
         CreateHostedZone: !Ref CreateHostedZone
         ExistingHostedZoneId: !Ref ExistingHostedZoneId
         EnableHealthChecks: 'false'

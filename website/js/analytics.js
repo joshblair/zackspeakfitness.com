@@ -1,4 +1,4 @@
-// Google Analytics Integration for Zack Speak Fitness
+// Google Analytics Integration for Zack's Peak Fitness
 
 // Google Analytics 4 Configuration
 const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // Replace with actual GA4 Measurement ID

@@ -215,6 +215,11 @@ main {
 .hero-image img {
     max-width: 100%;
     height: auto;
+    border-radius: 8px;
+    min-height: 300px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
     border-radius: 10px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }

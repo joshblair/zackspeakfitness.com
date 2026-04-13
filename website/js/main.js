@@ -1,4 +1,4 @@
-// Main JavaScript for Zack Speak Fitness Website
+// Main JavaScript for Zack's Peak Fitness Website
 
 // DOM Content Loaded Event
 document.addEventListener('DOMContentLoaded', function() {
