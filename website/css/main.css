@@ -308,6 +308,18 @@ section {
 }
 
 /* Services */
+.services-overview {
+    padding: 2rem 0 0;
+}
+
+.services-detailed {
+    padding-top: 2rem;
+}
+
+.service-category {
+    margin-bottom: 3rem;
+}
+
 .services-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -375,6 +387,125 @@ section {
     color: #27ae60;
     font-weight: bold;
     font-size: 1.1rem;
+}
+
+/* Training Packages */
+.packages {
+    margin: 4rem 0;
+}
+
+.packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.package {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.package:hover {
+    transform: translateY(-5px);
+}
+
+.package.featured {
+    border: 3px solid #e74c3c;
+}
+
+.package h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.package-price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #e74c3c;
+    margin-bottom: 1rem;
+}
+
+.package-savings {
+    font-size: 0.9rem;
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.package-features {
+    list-style: none;
+    margin-bottom: 2rem;
+    flex: 1;
+}
+
+.package-features li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.package-features li:before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* How It Works */
+.process {
+    background: #f8f9fa;
+    padding: 4rem 0;
+}
+
+.process-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.step {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.step-number {
+    width: 60px;
+    height: 60px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 auto 1.5rem;
+}
+
+.step h3 {
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.step p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
 /* About Page Styles */
